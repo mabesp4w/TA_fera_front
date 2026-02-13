@@ -1,0 +1,186 @@
+/** @format */
+
+import api from "./api";
+import type { APIResponse } from "@/types/auth";
+
+export type PredictionMethod = "SES" | "DES" | "TES";
+
+export interface PredictionResult {
+  id: number;
+  jenis_kendaraan?: number;
+  jenis_kendaraan_nama?: string;
+  tahun_prediksi: number;
+  bulan_prediksi: number;
+  metode: PredictionMethod;
+  nilai_prediksi: number;
+  alpha?: number;
+  beta?: number;
+  gamma?: number;
+  seasonal_periods?: number;
+  mape: number;
+  mae: number;
+  rmse: number;
+  nilai_aktual?: number;
+  tanggal_prediksi: string;
+  data_training_dari: string;
+  data_training_sampai: string;
+  jumlah_data_training: number;
+  debug?: {
+    prediction_only?: boolean;
+    actual_value_found?: boolean;
+    actual_value?: number;
+    prediction?: number;
+    note?: string;
+  };
+}
+
+export interface PredictionListResponse {
+  data: PredictionResult[];
+  page: number;
+  page_size: number;
+  total_pages: number;
+  total_count: number;
+  has_next: boolean;
+  has_previous: boolean;
+}
+
+export interface PredictionGenerateRequest {
+  metode?: PredictionMethod;
+  jenis_kendaraan_id?: number;
+  tahun_prediksi: number;
+  bulan_prediksi: number;
+  alpha?: number;
+  beta?: number;
+  gamma?: number;
+  seasonal_periods?: number;
+}
+
+export interface PredictionComparison {
+  metode: PredictionMethod;
+  nilai_prediksi: number;
+  mape: number;
+  mae: number;
+  rmse: number;
+  alpha?: number;
+  beta?: number;
+  gamma?: number;
+}
+
+export interface PredictionChartData {
+  actual: { periode: string; nilai: number }[];
+  predictions: { metode: string; data: { periode: string; nilai: number }[] };
+}
+
+export const prediksiService = {
+  /**
+   * Generate prediksi
+   */
+  async generate(data: PredictionGenerateRequest): Promise<PredictionResult> {
+    const response = await api.post<APIResponse<PredictionResult>>(
+      `/crud/prediksi/generate/`,
+      data
+    );
+    return response.data.results!;
+  },
+
+  /**
+   * Compare prediction methods
+   */
+  async compare(jenis_kendaraan_id?: number): Promise<PredictionComparison[]> {
+    const params = new URLSearchParams();
+    if (jenis_kendaraan_id) {
+      params.append("jenis_kendaraan_id", jenis_kendaraan_id.toString());
+    }
+
+    const response = await api.get<APIResponse<PredictionComparison[]>>(
+      `/crud/prediksi/compare/?${params.toString()}`
+    );
+    return response.data.results!;
+  },
+
+  /**
+   * Get chart data
+   */
+  async getChartData(jenis_kendaraan_id?: number): Promise<PredictionChartData> {
+    const params = new URLSearchParams();
+    if (jenis_kendaraan_id) {
+      params.append("jenis_kendaraan_id", jenis_kendaraan_id.toString());
+    }
+
+    const response = await api.get<APIResponse<PredictionChartData>>(
+      `/crud/prediksi/chart/?${params.toString()}`
+    );
+    return response.data.results!;
+  },
+
+  /**
+   * Get evaluation metrics
+   */
+  async getEvaluation(jenis_kendaraan_id?: number): Promise<{
+    best_method: string;
+    comparisons: PredictionComparison[];
+  }> {
+    const params = new URLSearchParams();
+    if (jenis_kendaraan_id) {
+      params.append("jenis_kendaraan_id", jenis_kendaraan_id.toString());
+    }
+
+    const response = await api.get<APIResponse<{best_method: string; comparisons: PredictionComparison[]}>>(
+      `/crud/prediksi/evaluation/?${params.toString()}`
+    );
+    return response.data.results!;
+  },
+
+  /**
+   * Get list hasil prediksi
+   */
+  async getList(params?: {
+    page?: number;
+    page_size?: number;
+    jenis_kendaraan_id?: number;
+    metode?: PredictionMethod;
+  }): Promise<PredictionListResponse> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append("page", params.page.toString());
+    if (params?.page_size)
+      queryParams.append("page_size", params.page_size.toString());
+    if (params?.jenis_kendaraan_id)
+      queryParams.append("jenis_kendaraan_id", params.jenis_kendaraan_id.toString());
+    if (params?.metode) queryParams.append("metode", params.metode);
+
+    const response = await api.get<APIResponse<PredictionListResponse>>(
+      `/crud/hasil-prediksi/?${queryParams.toString()}`
+    );
+    return response.data.results!;
+  },
+
+  /**
+   * Delete prediksi
+   */
+  async delete(id: number): Promise<void> {
+    await api.delete(`/crud/hasil-prediksi/${id}/`);
+  },
+};
+
+// Method options
+export const METHOD_OPTIONS: { value: PredictionMethod; label: string; description: string }[] = [
+  { value: "SES", label: "SES", description: "Simple Exponential Smoothing - Untuk data tanpa tren dan musiman" },
+  { value: "DES", label: "DES", description: "Double Exponential Smoothing - Untuk data dengan tren" },
+  { value: "TES", label: "TES", description: "Triple Exponential Smoothing - Untuk data dengan tren dan musiman" },
+];
+
+// Bulan options
+export const BULAN_OPTIONS: { value: number; label: string }[] = [
+  { value: 1, label: "Januari" },
+  { value: 2, label: "Februari" },
+  { value: 3, label: "Maret" },
+  { value: 4, label: "April" },
+  { value: 5, label: "Mei" },
+  { value: 6, label: "Juni" },
+  { value: 7, label: "Juli" },
+  { value: 8, label: "Agustus" },
+  { value: 9, label: "September" },
+  { value: 10, label: "Oktober" },
+  { value: 11, label: "November" },
+  { value: 12, label: "Desember" },
+];
