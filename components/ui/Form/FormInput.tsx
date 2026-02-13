@@ -4,19 +4,15 @@
 
 import { useFormContext, Controller } from "react-hook-form";
 import Input from "../Input";
+import { InputHTMLAttributes } from "react";
 
-interface FormInputProps {
+interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
   name: string;
   label?: string;
   helperText?: string;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
-  type?: string;
-  placeholder?: string;
-  disabled?: boolean;
-  autoComplete?: string;
   showPasswordToggle?: boolean;
-  className?: string;
 }
 
 export default function FormInput({

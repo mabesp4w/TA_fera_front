@@ -99,11 +99,7 @@ export default function PrediksiGeneratePage() {
         metode: formData.metode || "SES",
         tahun_prediksi: formData.tahun_prediksi,
         bulan_prediksi: formData.bulan_prediksi,
-        jenis_kendaraan_id: formData.jenis_kendaraan_id && formData.jenis_kendaraan_id !== ""
-          ? typeof formData.jenis_kendaraan_id === "string"
-            ? parseInt(formData.jenis_kendaraan_id)
-            : formData.jenis_kendaraan_id
-          : undefined,
+        jenis_kendaraan_id: formData.jenis_kendaraan_id || undefined,
         alpha: formData.alpha,
         beta: formData.beta,
         gamma: formData.gamma,
