@@ -171,4 +171,24 @@ export const transaksiPajakService = {
     );
     return response.data.results!;
   },
+
+  /**
+   * Delete multiple transaksi pajak berdasarkan filter
+   */
+  async deleteByFilter(params?: {
+    tahun?: number;
+    bulan?: number;
+    jenis_kendaraan_id?: number;
+  }): Promise<{ deleted_count: number }> {
+    const queryParams = new URLSearchParams();
+    if (params?.tahun) queryParams.append("tahun", params.tahun.toString());
+    if (params?.bulan) queryParams.append("bulan", params.bulan.toString());
+    if (params?.jenis_kendaraan_id)
+      queryParams.append("jenis_kendaraan_id", params.jenis_kendaraan_id.toString());
+
+    const response = await api.delete<APIResponse<{ deleted_count: number }>>(
+      `/crud/transaksi-pajak/bulk-delete/?${queryParams.toString()}`
+    );
+    return response.data.results!;
+  },
 };

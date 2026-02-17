@@ -8,6 +8,7 @@ export { default as DatePicker } from "./DatePicker";
 export { default as ImageUpload } from "./ImageUpload";
 export { default as Card } from "./Card";
 export { default as Modal } from "./Modal";
+export { default as ModalConfirm } from "./ModalConfirm";
 export { default as Animated } from "./Animated";
 export { default as SearchInput } from "./SearchInput";
 export { default as Pagination } from "./Pagination";

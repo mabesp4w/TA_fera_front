@@ -2,7 +2,7 @@
 
 import { Card, Button, Input } from "@/components/ui";
 import type { SelectOption } from "@/components/ui/types";
-import { Search, Filter as FilterIcon, Plus, Loader2 } from "lucide-react";
+import { Search, Filter as FilterIcon, Plus, Loader2, Trash2 } from "lucide-react";
 import dynamic from "next/dynamic";
 
 // Dynamic import untuk Select untuk menghindari SSR issues
@@ -25,6 +25,8 @@ interface FilterProps {
   bulanOptions: SelectOption[];
   isLoading?: boolean;
   onCreate: () => void;
+  onBulkDelete?: () => void;
+  isDeleting?: boolean;
 }
 
 export default function Filter({
@@ -42,6 +44,8 @@ export default function Filter({
   bulanOptions,
   isLoading = false,
   onCreate,
+  onBulkDelete,
+  isDeleting = false,
 }: FilterProps) {
   return (
     <Card className="mb-6">
@@ -69,6 +73,25 @@ export default function Filter({
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline ml-2">Tambah Transaksi</span>
           </Button>
+
+          {/* Bulk Delete Button - Muncul hanya jika Tahun+Bulan atau Tahun+Jenis terisi */}
+          {((selectedTahun && selectedBulan) || (selectedTahun && selectedJenis)) && onBulkDelete && (
+            <Button
+              onClick={onBulkDelete}
+              variant="error"
+              className="shrink-0"
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4" />
+              )}
+              <span className="hidden sm:inline ml-2">
+                {isDeleting ? "Menghapus..." : "Hapus Filter"}
+              </span>
+            </Button>
+          )}
         </div>
 
         {/* Filters */}

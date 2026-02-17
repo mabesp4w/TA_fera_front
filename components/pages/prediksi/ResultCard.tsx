@@ -3,12 +3,14 @@
 "use client";
 
 import { Card, Button } from "@/components/ui";
-import { TrendingUp, Calendar, Calculator, Trash2, TrendingDown, Brain, BarChart3 } from "lucide-react";
+import { TrendingUp, Calendar, Calculator, Trash2, TrendingDown, Brain, BarChart3, Save } from "lucide-react";
 import type { PredictionResult } from "@/services/prediksiService";
 
 interface ResultCardProps {
   result: PredictionResult;
   onDelete?: (result: PredictionResult) => void;
+  onSave?: (result: PredictionResult) => void;
+  isSaving?: boolean;
 }
 
 const METODE_LABEL: Record<string, string> = {
@@ -38,7 +40,7 @@ const formatNumber = (num: number | string | null | undefined) => {
   return new Intl.NumberFormat("id-ID").format(n);
 };
 
-export default function ResultCard({ result, onDelete }: ResultCardProps) {
+export default function ResultCard({ result, onDelete, onSave, isSaving }: ResultCardProps) {
   const mapeValue = typeof result.mape === "string" ? parseFloat(result.mape) : result.mape;
   const maeValue = typeof result.mae === "string" ? parseFloat(result.mae) : result.mae;
   const rmseValue = typeof result.rmse === "string" ? parseFloat(result.rmse) : result.rmse;
@@ -96,17 +98,31 @@ export default function ResultCard({ result, onDelete }: ResultCardProps) {
               Periode: {result.bulan_prediksi}/{result.tahun_prediksi}
             </div>
           </div>
-          {onDelete && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onDelete(result)}
-              className="btn-circle text-error shrink-0"
-              title="Hapus"
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          )}
+          <div className="flex items-center gap-1">
+            {onSave && !result.id && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onSave(result)}
+                className="btn-circle text-success shrink-0"
+                title="Simpan ke Database"
+                disabled={isSaving}
+              >
+                <Save className="w-4 h-4" />
+              </Button>
+            )}
+            {onDelete && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onDelete(result)}
+                className="btn-circle text-error shrink-0"
+                title={result.id ? "Hapus dari Database" : "Hapus dari Daftar"}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Nilai Prediksi vs Aktual */}

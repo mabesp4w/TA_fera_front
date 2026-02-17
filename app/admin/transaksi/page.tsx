@@ -14,6 +14,7 @@ import {
   ShowData,
   Form,
   DeleteModal,
+  BulkDeleteModal,
 } from "@/components/pages/transaksi";
 import type { SelectOption } from "@/components/ui/types";
 import {
@@ -69,6 +70,9 @@ export default function TransaksiPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  const [bulkDeleteFilterDesc, setBulkDeleteFilterDesc] = useState("");
   const [selectedItem, setSelectedItem] = useState<TransaksiPajak | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedJenis, setSelectedJenis] = useState<string | null>(null);
@@ -365,6 +369,63 @@ export default function TransaksiPage() {
     }
   };
 
+  // Handle bulk delete based on filter - buka modal konfirmasi
+  const handleBulkDelete = () => {
+    // Validasi: harus ada Tahun + Bulan atau Tahun + Jenis
+    if (!selectedTahun || (!selectedBulan && !selectedJenis)) {
+      toast.error("Minimal pilih Tahun + Bulan atau Tahun + Jenis Kendaraan");
+      return;
+    }
+
+    // Buat deskripsi filter
+    const filterDesc = [];
+    filterDesc.push(`Tahun ${selectedTahun}`);
+    if (selectedBulan) {
+      const bulanNames = [
+        "", "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      ];
+      filterDesc.push(`Bulan ${bulanNames[parseInt(selectedBulan)] || selectedBulan}`);
+    }
+    if (selectedJenis) {
+      const jenisNama = jenisOptions.find((j) => j.value === selectedJenis)?.label || selectedJenis;
+      filterDesc.push(`Jenis Kendaraan: ${jenisNama}`);
+    }
+
+    setBulkDeleteFilterDesc(filterDesc.join(", "));
+    setIsBulkDeleteModalOpen(true);
+  };
+
+  // Handle confirm bulk delete
+  const handleConfirmBulkDelete = async () => {
+    try {
+      setIsBulkDeleting(true);
+      const result = await transaksiPajakService.deleteByFilter({
+        tahun: parseInt(selectedTahun!),
+        bulan: selectedBulan ? parseInt(selectedBulan) : undefined,
+        jenis_kendaraan_id: selectedJenis ? parseInt(selectedJenis) : undefined,
+      });
+      toast.success(
+        `Berhasil menghapus ${result.deleted_count} transaksi pajak`
+      );
+
+      // Reset filter setelah hapus
+      setSelectedJenis(null);
+      setSelectedTahun(null);
+      setSelectedBulan(null);
+      setIsBulkDeleteModalOpen(false);
+
+      // Refresh data
+      fetchData(1, searchQuery, null, null, null);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Gagal menghapus data";
+      toast.error(errorMessage);
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
+
   // Handle page change
   const handlePageChange = (page: number) => {
     fetchData(page, searchQuery, selectedJenis, selectedTahun, selectedBulan);
@@ -402,6 +463,8 @@ export default function TransaksiPage() {
               bulanOptions={bulanOptions}
               isLoading={isOptionsLoading}
               onCreate={handleCreate}
+              onBulkDelete={handleBulkDelete}
+              isDeleting={isBulkDeleting}
             />
 
             {/* Show Data */}
@@ -444,6 +507,18 @@ export default function TransaksiPage() {
             setSelectedItem(null);
           }}
           onConfirm={handleConfirmDelete}
+        />
+
+        {/* Bulk Delete Confirmation Modal */}
+        <BulkDeleteModal
+          isOpen={isBulkDeleteModalOpen}
+          filterDescription={bulkDeleteFilterDesc}
+          isDeleting={isBulkDeleting}
+          onClose={() => {
+            setIsBulkDeleteModalOpen(false);
+            setBulkDeleteFilterDesc("");
+          }}
+          onConfirm={handleConfirmBulkDelete}
         />
       </div>
     </AdminRoute>

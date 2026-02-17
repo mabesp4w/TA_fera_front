@@ -42,7 +42,7 @@ export default function DeleteModal({
             Batal
           </Button>
           <Button
-            variant="accent"
+            variant="error"
             onClick={onConfirm}
             leftIcon={<Trash2 className="w-4 h-4" />}
           >

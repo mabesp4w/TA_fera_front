@@ -22,7 +22,7 @@ import {
   Tag,
   CarFront,
   Wallet,
-  LineChart,
+
   PieChart,
   Calculator,
 } from "lucide-react";
@@ -116,18 +116,6 @@ export default function Sidebar({ onLogout }: SidebarProps) {
       icon: <Receipt className="w-5 h-5 flex-shrink-0" />,
       path: "/admin/transaksi",
     },
-    {
-      title: "Laporan Pajak",
-      icon: <FileBarChart className="w-5 h-5 flex-shrink-0" />,
-      path: "#",
-      children: [
-        {
-          title: "Total Pajak",
-          icon: <BarChart3 className="w-4 h-4 flex-shrink-0" />,
-          path: "/admin/laporan/total-pajak",
-        },
-      ],
-    },
      {
        title: "Prediksi",
        icon: <TrendingUp className="w-5 h-5 flex-shrink-0" />,
@@ -142,16 +130,6 @@ export default function Sidebar({ onLogout }: SidebarProps) {
            title: "Generate Prediksi",
            icon: <Calculator className="w-4 h-4 flex-shrink-0" />,
            path: "/admin/prediksi/generate",
-         },
-         {
-           title: "Compare Metode",
-           icon: <BarChart3 className="w-4 h-4 flex-shrink-0" />,
-           path: "/admin/prediksi/compare",
-         },
-         {
-           title: "Chart Prediksi",
-           icon: <LineChart className="w-4 h-4 flex-shrink-0" />,
-           path: "/admin/prediksi/chart",
          },
          {
            title: "Evaluasi",

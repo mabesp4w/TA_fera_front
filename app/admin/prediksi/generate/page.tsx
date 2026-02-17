@@ -46,6 +46,7 @@ const prediksiSchema = yup.object().shape({
 export default function PrediksiGeneratePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [predictions, setPredictions] = useState<PredictionResult[]>([]);
   const [jenisKendaraanOptions, setJenisKendaraanOptions] = useState<
     SelectOption[]
@@ -55,8 +56,8 @@ export default function PrediksiGeneratePage() {
     resolver: yupResolver(prediksiSchema) as any,
     defaultValues: {
       metode: "SES",
-      tahun_prediksi: new Date().getFullYear(),
-      bulan_prediksi: new Date().getMonth() + 1,
+      tahun_prediksi: 2025,
+      bulan_prediksi: 12,
     },
   });
 
@@ -84,8 +85,8 @@ export default function PrediksiGeneratePage() {
   const handleOpenForm = () => {
     reset({
       metode: "SES",
-      tahun_prediksi: new Date().getFullYear(),
-      bulan_prediksi: new Date().getMonth() + 1,
+      tahun_prediksi: 2025,
+      bulan_prediksi: 12,
     });
     setIsModalOpen(true);
   };
@@ -128,14 +129,58 @@ export default function PrediksiGeneratePage() {
 
   // Handle delete prediction
   const handleDelete = async (result: PredictionResult) => {
+    // Jika belum ada id (belum disimpan ke database), hapus dari list saja
+    if (!result.id) {
+      setPredictions((prev) => prev.filter((p) => p !== result));
+      toast.success("Prediksi dihapus dari daftar");
+      return;
+    }
+
+    // Jika sudah ada id (sudah disimpan ke database), hapus dari database
     try {
       await prediksiService.delete(result.id);
       setPredictions((prev) => prev.filter((p) => p.id !== result.id));
-      toast.success("Prediksi berhasil dihapus");
+      toast.success("Prediksi berhasil dihapus dari database");
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : "Gagal menghapus prediksi";
       toast.error(errorMessage);
+    }
+  };
+
+  // Handle save prediction to database
+  const handleSave = async (result: PredictionResult) => {
+    try {
+      setIsSaving(true);
+
+      const saveData: PredictionGenerateRequest & { keterangan?: string } = {
+        metode: result.metode,
+        tahun_prediksi: result.tahun_prediksi,
+        bulan_prediksi: result.bulan_prediksi,
+        jenis_kendaraan_id: result.jenis_kendaraan,
+        alpha: result.alpha,
+        beta: result.beta,
+        gamma: result.gamma,
+        seasonal_periods: result.seasonal_periods,
+        keterangan: `Disimpan dari halaman generate prediksi`,
+      };
+
+      const savedResult = await prediksiService.save(saveData);
+
+      // Update prediction in the list with saved data
+      setPredictions((prev) =>
+        prev.map((p) =>
+          p === result ? { ...result, ...savedResult } : p
+        )
+      );
+
+      toast.success("Prediksi berhasil disimpan ke database");
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Gagal menyimpan prediksi";
+      toast.error(errorMessage);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -265,11 +310,13 @@ export default function PrediksiGeneratePage() {
               </Card>
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {predictions.map((prediction) => (
+                {predictions.map((prediction, index) => (
                   <ResultCard
-                    key={prediction.id}
+                    key={prediction.id || `pred-${index}`}
                     result={prediction}
                     onDelete={handleDelete}
+                    onSave={handleSave}
+                    isSaving={isSaving}
                   />
                 ))}
               </div>

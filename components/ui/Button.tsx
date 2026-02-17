@@ -5,7 +5,7 @@ import { Loader2 } from "lucide-react";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
-  variant?: "primary" | "secondary" | "accent" | "ghost" | "outline" | "link";
+  variant?: "primary" | "secondary" | "accent" | "error" | "ghost" | "outline" | "link";
   size?: "xs" | "sm" | "md" | "lg";
   loading?: boolean;
   leftIcon?: ReactNode;
@@ -28,6 +28,7 @@ export default function Button({
     primary: "btn-primary",
     secondary: "btn-secondary",
     accent: "btn-accent",
+    error: "btn-error !text-white",
     ghost: "btn-ghost",
     outline: "btn-outline",
     link: "btn-link",
