@@ -6,16 +6,16 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
 
-interface AdminRouteProps {
+interface PimpinanRouteProps {
   children: React.ReactNode;
 }
 
 /**
- * Component untuk protect route yang hanya bisa diakses admin
+ * Component untuk protect route yang hanya bisa diakses pimpinan
  * Redirect ke login jika tidak authenticated
- * Redirect ke login jika bukan admin
+ * Redirect ke login jika bukan pimpinan
  */
-export default function AdminRoute({ children }: AdminRouteProps) {
+export default function PimpinanRoute({ children }: PimpinanRouteProps) {
   const router = useRouter();
   const { user, isAuthenticated, isLoading, checkAuth } = useAuthStore();
   const [isChecking, setIsChecking] = useState(true);
@@ -44,8 +44,8 @@ export default function AdminRoute({ children }: AdminRouteProps) {
         return;
       }
 
-      // Redirect to login if not admin
-      if (user?.role !== "admin") {
+      // Redirect to login if not pimpinan
+      if (user?.role !== "pimpinan") {
         router.push("/login");
         return;
       }
@@ -62,7 +62,7 @@ export default function AdminRoute({ children }: AdminRouteProps) {
   }
 
   // Show loading if redirecting
-  if (!isAuthenticated || user?.role !== "admin") {
+  if (!isAuthenticated || user?.role !== "pimpinan") {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <span className="loading loading-spinner loading-lg"></span>
@@ -70,6 +70,6 @@ export default function AdminRoute({ children }: AdminRouteProps) {
     );
   }
 
-  // Render children if user is admin
+  // Render children if user is pimpinan
   return <>{children}</>;
 }

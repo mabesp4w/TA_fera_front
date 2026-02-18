@@ -25,12 +25,12 @@ export default function LoginPage() {
   const { login, isAuthenticated, isLoading, user } = useAuthStore();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      // Redirect admin to admin dashboard, others to home
-      if (user?.role === "admin") {
-        router.push("/admin/dashboard");
+    if (isAuthenticated && user) {
+      // Redirect berdasarkan role
+      if (user.role === "pimpinan") {
+        router.push("/pimpinan/dashboard");
       } else {
-        router.push("/");
+        router.push("/admin/dashboard");
       }
     }
   }, [isAuthenticated, user, router]);

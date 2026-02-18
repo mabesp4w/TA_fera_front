@@ -24,6 +24,20 @@ export const toastService = {
   },
 
   /**
+   * Show info toast
+   * @param message - Info message to display
+   */
+  info: (message: string) => {
+    toast(message, {
+      icon: "ℹ️",
+      style: {
+        background: "#3b82f6",
+        color: "#fff",
+      },
+    });
+  },
+
+  /**
    * Show loading toast
    * @param message - Loading message to display
    * @returns Toast ID for updating/dismissing

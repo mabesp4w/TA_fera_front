@@ -62,6 +62,96 @@ export interface AgregatSummary {
   jumlah_periode: number;
 }
 
+export const agregatPendapatanService = {
+  // ...same implementation as agregatService
+  
+  /**
+   * Get list agregat pendapatan bulanan
+   */
+  async getList(params?: {
+    page?: number;
+    page_size?: number;
+    tahun?: number;
+    bulan?: number;
+    jenis_kendaraan_id?: number;
+  }): Promise<AgregatListResponse> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append("page", params.page.toString());
+    if (params?.page_size)
+      queryParams.append("page_size", params.page_size.toString());
+    if (params?.tahun)
+      queryParams.append("tahun", params.tahun.toString());
+    if (params?.bulan) queryParams.append("bulan", params.bulan.toString());
+    if (params?.jenis_kendaraan_id)
+      queryParams.append(
+        "jenis_kendaraan_id",
+        params.jenis_kendaraan_id.toString()
+      );
+
+    const response = await api.get<APIResponse<AgregatListResponse>>(
+      `/crud/agregat-pendapatan-bulanan/?${queryParams.toString()}`
+    );
+    return response.data.results!;
+  },
+
+  /**
+   * Get detail agregat
+   */
+  async getDetail(id: number): Promise<AgregatPendapatan> {
+    const response = await api.get<APIResponse<AgregatPendapatan>>(
+      `/crud/agregat-pendapatan-bulanan/${id}/`
+    );
+    return response.data.results!;
+  },
+
+  /**
+   * Regenerate agregat data
+   */
+  async regenerate(
+    data: AgregatRegenerateRequest
+  ): Promise<AgregatRegenerateResponse> {
+    const response = await api.post<APIResponse<AgregatRegenerateResponse>>(
+      `/crud/agregat-pendapatan-bulanan/regenerate/`,
+      data
+    );
+    return response.data.results!;
+  },
+
+  /**
+   * Get filter options (tahun dan bulan yang tersedia di database)
+   */
+  async getFilterOptions(): Promise<FilterOptions> {
+    const response = await api.get<APIResponse<FilterOptions>>(
+      `/crud/agregat-pendapatan-bulanan/filter-options/`
+    );
+    return response.data.results!;
+  },
+
+  /**
+   * Get summary agregat (total keseluruhan tanpa pagination)
+   */
+  async getSummary(params?: {
+    tahun?: number;
+    bulan?: number;
+    jenis_kendaraan_id?: number;
+  }): Promise<AgregatSummary> {
+    const queryParams = new URLSearchParams();
+    if (params?.tahun) queryParams.append("tahun", params.tahun.toString());
+    if (params?.bulan) queryParams.append("bulan", params.bulan.toString());
+    if (params?.jenis_kendaraan_id)
+      queryParams.append(
+        "jenis_kendaraan_id",
+        params.jenis_kendaraan_id.toString()
+      );
+
+    const response = await api.get<APIResponse<AgregatSummary>>(
+      `/crud/agregat-pendapatan-bulanan/summary/?${queryParams.toString()}`
+    );
+    return response.data.results!;
+  },
+};
+
+// Alias for backward compatibility
 export const agregatService = {
   /**
    * Get list agregat pendapatan bulanan

@@ -6,25 +6,18 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
 import {
   LayoutDashboard,
-  Database,
-  Car,
-  Receipt,
   TrendingUp,
   BarChart3,
   FileText,
-  FileBarChart,
-  Settings,
+  PieChart,
+  Calculator,
   LogOut,
   Menu,
   X,
-  Users,
-  MapPin,
-  Tag,
-  CarFront,
-  Wallet,
-
-  PieChart,
-  Calculator,
+  Download,
+  FileBarChart,
+  LineChart,
+  Crown,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -35,11 +28,11 @@ interface MenuItem {
   children?: MenuItem[];
 }
 
-interface SidebarProps {
+interface SidebarPimpinanProps {
   onLogout?: () => void;
 }
 
-export default function Sidebar({ onLogout }: SidebarProps) {
+export default function SidebarPimpinan({ onLogout }: SidebarPimpinanProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuthStore();
@@ -63,100 +56,61 @@ export default function Sidebar({ onLogout }: SidebarProps) {
     );
   };
 
+  // Menu khusus pimpinan - dashboard, prediksi, dan laporan
   const menuItems: MenuItem[] = [
     {
       title: "Dashboard",
       icon: <LayoutDashboard className="w-5 h-5 flex-shrink-0" />,
-      path: "/admin/dashboard",
+      path: "/pimpinan/dashboard",
     },
     {
-      title: "Pengguna Sistem",
-      icon: <Users className="w-5 h-5 flex-shrink-0" />,
-      path: "/admin/users",
-    },
-    {
-      title: "Master Data",
-      icon: <Database className="w-5 h-5 flex-shrink-0" />,
+      title: "Prediksi",
+      icon: <TrendingUp className="w-5 h-5 flex-shrink-0" />,
       path: "#",
       children: [
         {
-          title: "Jenis Kendaraan",
-          icon: <Tag className="w-4 h-4 flex-shrink-0" />,
-          path: "/admin/master/jenis-kendaraan",
+          title: "Hasil Prediksi",
+          icon: <FileText className="w-4 h-4 flex-shrink-0" />,
+          path: "/pimpinan/prediksi/hasil",
         },
         {
-          title: "Kecamatan",
-          icon: <MapPin className="w-4 h-4 flex-shrink-0" />,
-          path: "/admin/master/kecamatan",
+          title: "Prediksi Hybrid",
+          icon: <Calculator className="w-4 h-4 flex-shrink-0" />,
+          path: "/pimpinan/prediksi/hybrid",
         },
         {
-          title: "Kelurahan",
-          icon: <MapPin className="w-4 h-4 flex-shrink-0" />,
-          path: "/admin/master/kelurahan",
+          title: "Evaluasi Metode",
+          icon: <PieChart className="w-4 h-4 flex-shrink-0" />,
+          path: "/pimpinan/prediksi/evaluasi",
         },
         {
-          title: "Merek Kendaraan",
-          icon: <Tag className="w-4 h-4 flex-shrink-0" />,
-          path: "/admin/master/merek-kendaraan",
-        },
-        {
-          title: "Type Kendaraan",
-          icon: <CarFront className="w-4 h-4 flex-shrink-0" />,
-          path: "/admin/master/type-kendaraan",
-        },
-        {
-          title: "Wajib Pajak",
-          icon: <Users className="w-4 h-4 flex-shrink-0" />,
-          path: "/admin/master/wajib-pajak",
+          title: "Analisis Trend",
+          icon: <LineChart className="w-4 h-4 flex-shrink-0" />,
+          path: "/pimpinan/prediksi/trend",
         },
       ],
     },
     {
-      title: "Kendaraan Bermotor",
-      icon: <Car className="w-5 h-5 flex-shrink-0" />,
-      path: "/admin/kendaraan",
-    },
-    {
-      title: "Transaksi Pajak",
-      icon: <Receipt className="w-5 h-5 flex-shrink-0" />,
-      path: "/admin/transaksi",
-    },
-     {
-       title: "Prediksi",
-       icon: <TrendingUp className="w-5 h-5 flex-shrink-0" />,
-       path: "#",
-       children: [
-         {
-           title: "Hybrid Method",
-           icon: <Calculator className="w-4 h-4 flex-shrink-0" />,
-           path: "/admin/prediksi/hybrid",
-         },
-         {
-           title: "Generate Prediksi",
-           icon: <Calculator className="w-4 h-4 flex-shrink-0" />,
-           path: "/admin/prediksi/generate",
-         },
-         {
-           title: "Evaluasi",
-           icon: <PieChart className="w-4 h-4 flex-shrink-0" />,
-           path: "/admin/prediksi/evaluation",
-         },
-         {
-           title: "Trend Analysis",
-           icon: <TrendingUp className="w-4 h-4 flex-shrink-0" />,
-           path: "/admin/prediksi/trend",
-         },
-       ],
-     },
-    {
-      title: "Agregat Pendapatan",
-      icon: <BarChart3 className="w-5 h-5 flex-shrink-0" />,
-      path: "/admin/agregat",
-    },
-    {
-      title: "Hasil Prediksi",
-      icon: <FileText className="w-5 h-5 flex-shrink-0" />,
-      path: "/admin/hasil-prediksi",
+      title: "Laporan",
+      icon: <FileBarChart className="w-5 h-5 flex-shrink-0" />,
+      path: "#",
+      children: [
+        {
+          title: "Laporan Pendapatan",
+          icon: <BarChart3 className="w-4 h-4 flex-shrink-0" />,
+          path: "/pimpinan/laporan/pendapatan",
+        },
+        {
+          title: "Laporan Prediksi",
+          icon: <LineChart className="w-4 h-4 flex-shrink-0" />,
+          path: "/pimpinan/laporan/prediksi",
+        },
+        {
+          title: "Export Data",
+          icon: <Download className="w-4 h-4 flex-shrink-0" />,
+          path: "/pimpinan/export",
+        },
+      ],
     },
   ];
 
@@ -240,9 +194,15 @@ export default function Sidebar({ onLogout }: SidebarProps) {
         } lg:translate-x-0 w-64 bg-base-100 border-r border-base-300 flex flex-col shadow-lg`}
       >
         {/* Sidebar Header */}
-        <div className="p-4 border-b border-base-300">
+        <div className="p-4 border-b border-base-300 bg-gradient-to-r from-primary/10 to-secondary/10">
           <div className="flex items-center justify-between">
-            <h1 className="text-base font-bold text-primary">UPPD/SAMSAT JAYAPURA</h1>
+            <div className="flex items-center gap-2">
+              <Crown className="w-6 h-6 text-primary" />
+              <div>
+                <h1 className="text-sm font-bold text-primary leading-tight">UPPD/SAMSAT</h1>
+                <p className="text-[10px] text-base-content/70">JAYAPURA</p>
+              </div>
+            </div>
             <button
               className="lg:hidden btn btn-ghost btn-sm btn-circle"
               onClick={() => setIsMobileMenuOpen(false)}
@@ -252,36 +212,41 @@ export default function Sidebar({ onLogout }: SidebarProps) {
           </div>
         </div>
 
-        {/* User Info */}
-        <div className="p-4 border-b border-base-300">
+        {/* User Info - Khusus Pimpinan */}
+        <div className="p-4 border-b border-base-300 bg-amber-50 dark:bg-amber-950/20">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary text-primary-content flex items-center justify-center">
-              <span className="text-sm font-bold">
-                {user?.first_name?.[0]?.toUpperCase() ||
-                  user?.username?.[0]?.toUpperCase() ||
-                  "U"}
-              </span>
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-lg">
+              <Crown className="w-6 h-6" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold truncate">
-                {user?.first_name || user?.username || "User"}
+              <p className="text-sm font-bold truncate text-amber-700 dark:text-amber-400">
+                {user?.first_name || user?.username || "Kepala UPPD"}
               </p>
-              <p className="text-[10px] text-base-content/70 truncate">
-                {user?.role || "User"}
+              <p className="text-xs text-amber-600 dark:text-amber-500 font-medium">
+                Kepala UPPD/SAMSAT
               </p>
+              <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[10px] bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                <Crown className="w-3 h-3" />
+                Pimpinan
+              </span>
             </div>
           </div>
         </div>
 
         {/* Menu */}
         <nav className="flex-1 overflow-y-auto p-3">
+          <div className="mb-2 px-2">
+            <p className="text-[10px] font-semibold text-base-content/50 uppercase tracking-wider">
+              Menu Analisis
+            </p>
+          </div>
           <ul className="menu menu-vertical gap-1">
             {menuItems.map((item) => renderMenuItem(item))}
           </ul>
         </nav>
 
         {/* Sidebar Footer */}
-        <div className="p-3 border-t border-base-300">
+        <div className="p-3 border-t border-base-300 bg-base-200/50">
           <ul className="menu menu-vertical gap-1">
             <li>
               <a
@@ -290,7 +255,7 @@ export default function Sidebar({ onLogout }: SidebarProps) {
                   e.preventDefault();
                   handleLogout();
                 }}
-                className="menu-link"
+                className="menu-link text-error hover:bg-error/10"
               >
                 <LogOut className="w-5 h-5 flex-shrink-0" />
                 <span className="text-sm font-medium">Logout</span>
@@ -310,4 +275,3 @@ export default function Sidebar({ onLogout }: SidebarProps) {
     </>
   );
 }
-

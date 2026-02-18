@@ -4,68 +4,102 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { FormProvider } from "react-hook-form";
+import * as yup from "yup";
+import { FormInput, Button, Card } from "@/components/ui";
 import { useAuthStore } from "@/stores/authStore";
-import Header from "../components/Header";
-import { Button } from "@/components/ui";
-import { LogIn } from "lucide-react";
+import { LogIn, Lock, User } from "lucide-react";
+import { Animated } from "@/components/ui";
+
+const loginSchema = yup.object({
+  username: yup.string().required("Username wajib diisi"),
+  password: yup.string().required("Password wajib diisi"),
+});
+
+type LoginFormData = yup.InferType<typeof loginSchema>;
 
 export default function Home() {
   const router = useRouter();
-  const { user, isAuthenticated, logout, isLoading } = useAuthStore();
+  const { login, isAuthenticated, isLoading, user } = useAuthStore();
 
   useEffect(() => {
-    // Redirect admin to dashboard
-    if (isAuthenticated && user?.role === "admin") {
-      router.push("/admin/dashboard");
+    if (isAuthenticated && user) {
+      // Redirect berdasarkan role
+      if (user.role === "pimpinan") {
+        router.push("/pimpinan/dashboard");
+      } else {
+        router.push("/admin/dashboard");
+      }
     }
   }, [isAuthenticated, user, router]);
 
-  const handleLogout = async () => {
-    await logout();
-    router.push("/login");
+  const methods = useForm<LoginFormData>({
+    resolver: yupResolver(loginSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
+    try {
+      await login(data);
+      // Redirect will be handled by useEffect
+    } catch {
+      // Error already handled in store
+    }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <span className="loading loading-spinner loading-lg"></span>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen">
-      <Header
-        showLogo={true}
-        showUserMenu={true}
-        showThemeSwitcher={true}
-      />
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center font-sans">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">UPPD/SAMSAT JAYAPURA</h1>
-          <p className="mt-4 text-lg text-base-content/70 mb-2">
-            PREDIKSI PENDAPATAN PAJAK KENDARAAN BERMOTOR
-          </p>
-          <p className="text-base text-base-content/60 mb-8">
-            Menggunakan Metode Exponential Smoothing
-          </p>
-          {!isAuthenticated && (
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={() => router.push("/login")}
-              leftIcon={<LogIn className="w-5 h-5" />}
+    <div className="min-h-screen flex items-center justify-center bg-base-200 p-6 md:p-8">
+      <Animated animation="fade-up" className="w-full max-w-md">
+        <Card
+          title="Login"
+          subtitle="Masuk ke akun Anda"
+          className="shadow-2xl"
+        >
+          <FormProvider {...methods}>
+            <form
+              onSubmit={methods.handleSubmit(onSubmit)}
+              className="space-y-4"
             >
-              Login untuk Melanjutkan
-            </Button>
-          )}
-          {isAuthenticated && user?.role !== "admin" && (
-            <p className="text-base-content/70">
-              Anda login sebagai <span className="font-semibold">{user?.role}</span>
-            </p>
-          )}
-        </div>
-      </div>
+              <FormInput
+                name="username"
+                label="Username"
+                placeholder="Masukkan username"
+                className="w-full"
+                leftIcon={<User className="w-5 h-5" />}
+                autoComplete="username"
+              />
+
+              <FormInput
+                name="password"
+                label="Password"
+                type="password"
+                placeholder="Masukkan password"
+                className="w-full"
+                leftIcon={<Lock className="w-5 h-5" />}
+                autoComplete="current-password"
+                showPasswordToggle
+              />
+
+              <div className="pt-4">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="w-full"
+                  loading={isLoading}
+                  leftIcon={<LogIn className="w-5 h-5" />}
+                >
+                  {isLoading ? "Memproses..." : "Login"}
+                </Button>
+              </div>
+            </form>
+          </FormProvider>
+        </Card>
+      </Animated>
     </div>
   );
 }

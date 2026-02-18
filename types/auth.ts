@@ -1,12 +1,14 @@
 /** @format */
 
+export type UserRole = "admin" | "pimpinan" | "user";
+
 export interface User {
   id: number;
   username: string;
   email: string;
   first_name: string;
   last_name: string;
-  role: string;
+  role: UserRole;
 }
 
 export interface LoginRequest {

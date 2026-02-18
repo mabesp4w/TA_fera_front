@@ -63,7 +63,7 @@ export default function Header({
         {showLogo && (
           <a
             className="btn btn-ghost text-xl"
-            onClick={() => router.push("/")}
+            onClick={() => router.push("/admin/dashboard")}
           >
             UPPD/SAMSAT JAYAPURA
           </a>
