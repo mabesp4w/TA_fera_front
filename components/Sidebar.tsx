@@ -127,14 +127,14 @@ export default function Sidebar({ onLogout }: SidebarProps) {
        path: "#",
        children: [
          {
-           title: "Hybrid Method",
-           icon: <Calculator className="w-4 h-4 flex-shrink-0" />,
-           path: "/admin/prediksi/hybrid",
-         },
-         {
            title: "Generate Prediksi",
            icon: <Calculator className="w-4 h-4 flex-shrink-0" />,
            path: "/admin/prediksi/generate",
+         },
+         {
+           title: "Hybrid Method",
+           icon: <Calculator className="w-4 h-4 flex-shrink-0" />,
+           path: "/admin/prediksi/hybrid",
          },
          {
            title: "Evaluasi",

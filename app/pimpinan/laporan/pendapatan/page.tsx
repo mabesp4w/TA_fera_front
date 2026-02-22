@@ -11,7 +11,9 @@ import { agregatService, AgregatPendapatan } from "@/services/agregatService";
 import { jenisKendaraanService } from "@/services/jenisKendaraanService";
 import type { SelectOption } from "@/components/ui/types";
 import { toast } from "@/services";
-import { FileText, Download, Printer, Calendar, TrendingUp, Wallet, ArrowRight } from "lucide-react";
+import { FileText, Download, Calendar, TrendingUp, Wallet, ArrowRight } from "lucide-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import {
   ResponsiveContainer,
   BarChart,
@@ -102,12 +104,97 @@ export default function LaporanPendapatanPage() {
   const totalSWDKLLJ = data.reduce((sum, item) => sum + (Number(item.total_swdkllj) || 0), 0);
   const totalBBNKB = data.reduce((sum, item) => sum + (Number(item.total_bbnkb) || 0), 0);
 
-  const handlePrint = () => {
-    window.print();
+  const handleExport = () => {
+    if (data.length === 0) {
+      toast.error("Tidak ada data untuk di-export");
+      return;
+    }
+
+    const headers = ["Periode", "PKB Pokok", "PKB Denda", "SWDKLLJ", "BBNKB", "Grand Total"];
+    const rows = data.map((item) => [
+      `${BULAN_NAMES[item.bulan]} ${item.tahun}`,
+      Number(item.total_pokok_pkb) || 0,
+      Number(item.total_denda_pkb) || 0,
+      Number(item.total_swdkllj) || 0,
+      Number(item.total_bbnkb) || 0,
+      Number(item.total_pendapatan) || 0,
+    ]);
+
+    // Footer total
+    rows.push([
+      "TOTAL",
+      data.reduce((s, i) => s + (Number(i.total_pokok_pkb) || 0), 0),
+      data.reduce((s, i) => s + (Number(i.total_denda_pkb) || 0), 0),
+      totalSWDKLLJ,
+      totalBBNKB,
+      totalPendapatan,
+    ]);
+
+    const csvContent = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    const filterLabel = selectedTahun ? `_${selectedTahun}` : "_semua";
+    link.download = `laporan_pendapatan${filterLabel}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success("Data berhasil di-export CSV!");
   };
 
-  const handleExport = () => {
-    toast.success("Fitur export sedang dalam pengembangan");
+  const handleExportPDF = () => {
+    if (data.length === 0) {
+      toast.error("Tidak ada data untuk di-export");
+      return;
+    }
+
+    const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("Laporan Pendapatan Pajak Kendaraan Bermotor", 148, 15, { align: "center" });
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    const subtitle = selectedTahun ? `Tahun ${selectedTahun}` : "Semua Tahun";
+    doc.text(`${subtitle} | Dicetak: ${new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}`, 148, 22, { align: "center" });
+
+    const pdfHeaders = [["Periode", "PKB Pokok", "PKB Denda", "SWDKLLJ", "BBNKB", "Grand Total"]];
+    const pdfRows = data.map((item) => [
+      `${BULAN_NAMES[item.bulan]} ${item.tahun}`,
+      formatRupiahFull(item.total_pokok_pkb),
+      formatRupiahFull(item.total_denda_pkb),
+      formatRupiahFull(item.total_swdkllj),
+      formatRupiahFull(item.total_bbnkb),
+      formatRupiahFull(item.total_pendapatan),
+    ]);
+
+    pdfRows.push([
+      "TOTAL",
+      formatRupiahFull(data.reduce((s, i) => s + (Number(i.total_pokok_pkb) || 0), 0)),
+      formatRupiahFull(data.reduce((s, i) => s + (Number(i.total_denda_pkb) || 0), 0)),
+      formatRupiahFull(totalSWDKLLJ),
+      formatRupiahFull(totalBBNKB),
+      formatRupiahFull(totalPendapatan),
+    ]);
+
+    autoTable(doc, {
+      head: pdfHeaders,
+      body: pdfRows,
+      startY: 28,
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [59, 130, 246], textColor: 255, fontStyle: "bold" },
+      alternateRowStyles: { fillColor: [249, 250, 251] },
+      didParseCell: (cellData: any) => {
+        if (cellData.row.index === pdfRows.length - 1 && cellData.section === "body") {
+          cellData.cell.styles.fontStyle = "bold";
+          cellData.cell.styles.fillColor = [229, 231, 235];
+        }
+      },
+    });
+
+    const filterLabel = selectedTahun ? `_${selectedTahun}` : "_semua";
+    doc.save(`laporan_pendapatan${filterLabel}.pdf`);
+    toast.success("Data berhasil di-export PDF!");
   };
 
   return (
@@ -150,11 +237,11 @@ export default function LaporanPendapatanPage() {
                   </select>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={handlePrint} leftIcon={<Printer className="w-4 h-4" />}>
-                    Cetak
+                  <Button variant="outline" size="sm" onClick={handleExport} leftIcon={<Download className="w-4 h-4" />}>
+                    CSV
                   </Button>
-                  <Button variant="primary" size="sm" onClick={handleExport} leftIcon={<Download className="w-4 h-4" />}>
-                    Export
+                  <Button variant="primary" size="sm" onClick={handleExportPDF} leftIcon={<FileText className="w-4 h-4" />}>
+                    PDF
                   </Button>
                 </div>
               </div>

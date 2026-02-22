@@ -65,15 +65,22 @@ api.interceptors.response.use(
     if (apiResponse && apiResponse.status === "error") {
       const errorMessage = apiResponse.message || "An error occurred";
       const errors = apiResponse.errors;
-      
+
       // If there are field-specific errors, format them
       if (errors) {
-        const formattedErrors = Object.entries(errors)
-          .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(", ") : messages}`)
-          .join("\n");
-        return Promise.reject(new Error(formattedErrors || errorMessage));
+        // Handle errors as string (common case)
+        if (typeof errors === "string") {
+          return Promise.reject(new Error(errors));
+        }
+        // Handle errors as object (validation errors)
+        if (typeof errors === "object" && errors !== null) {
+          const formattedErrors = Object.entries(errors)
+            .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(", ") : messages}`)
+            .join("\n");
+          return Promise.reject(new Error(formattedErrors || errorMessage));
+        }
       }
-      
+
       return Promise.reject(new Error(errorMessage));
     }
 

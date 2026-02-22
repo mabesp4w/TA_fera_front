@@ -26,6 +26,7 @@ export interface HybridPredictionResponse {
   confidence_upper: number;
   confidence_interval: number;
   metode: string;
+  base_method?: string;
   scenario: string;
   scenarios: {
     conservative: ScenarioResult;
@@ -49,6 +50,7 @@ export interface HybridPredictionResponse {
   data_training_sampai: string;
   jumlah_data_training: number;
   training_periods: number;
+  used_fallback?: boolean;
   keterangan: string;
   nilai_aktual?: number;
   error_absolut?: number;
@@ -70,5 +72,26 @@ export const hybridPredictionService = {
       data
     );
     return response.data.results!;
+  },
+
+  /**
+   * Save prediksi hybrid ke database
+   */
+  async save(data: HybridPredictionRequest & { keterangan?: string; prediction_data?: HybridPredictionResponse }): Promise<HybridPredictionResponse> {
+    const response = await api.post<APIResponse<HybridPredictionResponse>>(
+      `/crud/prediksi/hybrid/generate/`,
+      {
+        ...data,
+        save_to_db: true,
+      }
+    );
+    return response.data.results!;
+  },
+
+  /**
+   * Delete prediksi dari database
+   */
+  async delete(id: number): Promise<void> {
+    await api.delete(`/crud/hasil-prediksi/${id}/`);
   },
 };

@@ -21,6 +21,7 @@ interface FormSelectProps {
   menuShouldScrollIntoView?: boolean;
   menuShouldBlockScroll?: boolean;
   className?: string;
+  onChange?: (value: string | number | null | undefined) => void;
 }
 
 export default function FormSelect({
@@ -38,6 +39,7 @@ export default function FormSelect({
   menuShouldScrollIntoView = false,
   menuShouldBlockScroll = false,
   className = "",
+  onChange,
 }: FormSelectProps) {
   const {
     control,
@@ -76,14 +78,18 @@ export default function FormSelect({
             onChange={(selected) => {
               if (isMulti) {
                 // For multi-select, selected is an array
-                field.onChange(
-                  Array.isArray(selected)
-                    ? selected.map((item) => item.value)
-                    : []
-                );
+                const multiValue = Array.isArray(selected)
+                  ? selected.map((item) => item.value)
+                  : [];
+                field.onChange(multiValue);
               } else {
                 // For single select, extract value from SelectOption object
-                field.onChange(selected ? (selected as SelectOption).value : null);
+                const newValue = selected ? (selected as SelectOption).value : null;
+                field.onChange(newValue);
+                // Call external onChange callback if provided
+                if (onChange) {
+                  onChange(newValue);
+                }
               }
             }}
           />

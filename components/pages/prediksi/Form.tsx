@@ -16,6 +16,7 @@ interface FormProps {
   formMethods: UseFormReturn<PredictionGenerateRequest>;
   jenisKendaraanOptions: SelectOption[];
   onSubmit: (data: PredictionGenerateRequest) => void;
+  onJenisKendaraanChange?: (jenisKendaraanId: number | undefined) => void;
   onClose: () => void;
 }
 
@@ -46,6 +47,7 @@ export default function Form({
   formMethods,
   jenisKendaraanOptions,
   onSubmit,
+  onJenisKendaraanChange,
   onClose,
 }: FormProps) {
   const { handleSubmit, control } = formMethods;
@@ -108,6 +110,7 @@ export default function Form({
                 placeholder="Pilih jenis kendaraan"
                 menuPosition="fixed"
                 menuPlacement="bottom"
+                onChange={onJenisKendaraanChange ? (val) => onJenisKendaraanChange(val ? Number(val) : undefined) : undefined}
               />
             )}
 

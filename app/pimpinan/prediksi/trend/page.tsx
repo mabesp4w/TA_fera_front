@@ -62,6 +62,7 @@ export default function PrediksiTrendPage() {
   const [jenisKendaraanOptions, setJenisKendaraanOptions] = useState<SelectOption[]>([]);
   const [filterJenisKendaraan, setFilterJenisKendaraan] = useState<string>("");
   const [filterTahun, setFilterTahun] = useState<string>("");
+  const [filterBulan, setFilterBulan] = useState<string>("");
   const [chartType, setChartType] = useState<"line" | "area">("line");
 
   const fetchJenisKendaraan = useCallback(async () => {
@@ -82,28 +83,48 @@ export default function PrediksiTrendPage() {
       const response = await agregatService.getList({
         page_size: 1000,
         tahun: filterTahun ? parseInt(filterTahun) : undefined,
+        bulan: filterBulan ? parseInt(filterBulan) : undefined,
         jenis_kendaraan_id: filterJenisKendaraan ? parseInt(filterJenisKendaraan) : undefined,
       });
-      const sortedData = (response.data || [])
+      const rawData = (response.data || [])
         .sort((a: any, b: any) => {
           if (a.tahun !== b.tahun) return a.tahun - b.tahun;
           return a.bulan - b.bulan;
-        })
-        .map((item: any) => ({
-          periode: `${BULAN_NAMES[item.bulan - 1]} ${item.tahun}`,
-          tahun: item.tahun,
-          bulan: item.bulan,
-          total_pendapatan: Number(item.total_pendapatan) || 0,
-          jumlah_transaksi: item.jumlah_transaksi || 0,
-          jumlah_kendaraan: item.jumlah_kendaraan || 0,
-        }));
+        });
+
+      // Group by tahun+bulan dan agregasikan nilainya
+      // (supaya tidak muncul duplikat saat tidak filter jenis kendaraan)
+      const grouped = new Map<string, TrendData>();
+      rawData.forEach((item: any) => {
+        const key = `${item.tahun}-${item.bulan}`;
+        const existing = grouped.get(key);
+        if (existing) {
+          existing.total_pendapatan += Number(item.total_pendapatan) || 0;
+          existing.jumlah_transaksi += item.jumlah_transaksi || 0;
+          existing.jumlah_kendaraan += item.jumlah_kendaraan || 0;
+        } else {
+          grouped.set(key, {
+            periode: `${BULAN_NAMES[item.bulan - 1]} ${item.tahun}`,
+            tahun: item.tahun,
+            bulan: item.bulan,
+            total_pendapatan: Number(item.total_pendapatan) || 0,
+            jumlah_transaksi: item.jumlah_transaksi || 0,
+            jumlah_kendaraan: item.jumlah_kendaraan || 0,
+          });
+        }
+      });
+
+      const sortedData = Array.from(grouped.values()).sort((a, b) => {
+        if (a.tahun !== b.tahun) return a.tahun - b.tahun;
+        return a.bulan - b.bulan;
+      });
       setData(sortedData);
     } catch (error) {
       toast.error("Gagal memuat data trend");
     } finally {
       setIsLoading(false);
     }
-  }, [filterJenisKendaraan, filterTahun]);
+  }, [filterJenisKendaraan, filterTahun, filterBulan]);
 
   useEffect(() => {
     fetchJenisKendaraan();
@@ -172,7 +193,7 @@ export default function PrediksiTrendPage() {
             {/* Filters */}
             <Card className="mb-6">
               <div className="flex flex-col md:flex-row items-end gap-4">
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+                <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4 w-full">
                   <div>
                     <label className="label"><span className="label-text font-medium">Jenis Kendaraan</span></label>
                     <select className="select select-bordered w-full select-sm" value={filterJenisKendaraan} onChange={(e) => setFilterJenisKendaraan(e.target.value)}>
@@ -184,6 +205,17 @@ export default function PrediksiTrendPage() {
                     <select className="select select-bordered w-full select-sm" value={filterTahun} onChange={(e) => setFilterTahun(e.target.value)}>
                       <option value="">Semua Tahun</option>
                       {yearOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="label"><span className="label-text font-medium">Bulan</span></label>
+                    <select className="select select-bordered w-full select-sm" value={filterBulan} onChange={(e) => setFilterBulan(e.target.value)}>
+                      <option value="">Semua Bulan</option>
+                      {Array.from({ length: 12 }, (_, i) => (
+                        <option key={i + 1} value={i + 1}>
+                          {new Date(2024, i).toLocaleString("id-ID", { month: "long" })}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div>
@@ -218,7 +250,7 @@ export default function PrediksiTrendPage() {
                 </div>
               ) : data.length > 0 ? (
                 <div style={{ width: "100%", height: 350 }}>
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer key={chartType} width="100%" height="100%">
                     {chartType === "area" ? (
                       <AreaChart data={data} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.15)" />
@@ -232,7 +264,7 @@ export default function PrediksiTrendPage() {
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.15)" />
                         <XAxis dataKey="periode" tick={{ fontSize: 10 }} />
                         <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => formatRupiah(v)} width={70} />
-                        <Tooltip formatter={(value: number | undefined) => formatRupiahFull(value || 0)} />
+                        <Tooltip formatter={((value: any, name: any) => name === "Transaksi" ? Number(value || 0).toLocaleString("id-ID") + " transaksi" : formatRupiahFull(value || 0)) as any} />
                         <Legend wrapperStyle={{ fontSize: 11 }} />
                         <Line type="monotone" dataKey="total_pendapatan" name="Pendapatan" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 3 }} />
                         <Line type="monotone" dataKey="jumlah_transaksi" name="Transaksi" stroke="#10b981" strokeWidth={2} dot={{ r: 2 }} />

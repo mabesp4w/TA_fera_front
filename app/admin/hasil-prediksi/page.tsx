@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, Fragment } from "react";
 import AdminRoute from "@/components/AdminRoute";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
@@ -597,7 +597,7 @@ export default function HasilPrediksiPage() {
                             if (item.id === undefined) return null;
 
                             return (
-                              <>
+                              <Fragment key={item.id}>
                                 <tr
                                   key={item.id}
                                   className={`hover:bg-base-200/30 transition-colors ${
@@ -925,7 +925,7 @@ export default function HasilPrediksiPage() {
                                     </td>
                                   </tr>
                                 )}
-                              </>
+                              </Fragment>
                             );
                           })}
                         </tbody>

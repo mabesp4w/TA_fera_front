@@ -48,7 +48,7 @@ export default function PrediksiHybridPage() {
   const [selectedScenario, setSelectedScenario] = useState<"base" | "conservative" | "moderate" | "optimistic">("base");
 
   const formMethods = useForm<PrediksiFormData>({
-    resolver: yupResolver(prediksiSchema),
+    resolver: yupResolver(prediksiSchema) as any,
     defaultValues: { tahun_prediksi: new Date().getFullYear(), bulan_prediksi: new Date().getMonth() + 1 },
   });
 

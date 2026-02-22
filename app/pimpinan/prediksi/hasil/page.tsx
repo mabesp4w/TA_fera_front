@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import PimpinanRoute from "@/components/PimpinanRoute";
 import SidebarPimpinan from "@/components/SidebarPimpinan";
@@ -374,8 +374,8 @@ export default function PrediksiHasilPage() {
                             if (item.id === undefined) return null;
 
                             return (
-                              <>
-                                <tr key={item.id} className={`hover:bg-base-200/30 transition-colors ${isExpanded ? "bg-base-200/20" : ""}`}>
+                              <Fragment key={item.id}>
+                                <tr className={`hover:bg-base-200/30 transition-colors ${isExpanded ? "bg-base-200/20" : ""}`}>
                                   <td className="text-xs font-medium">
                                     {BULAN_NAMES[item.bulan_prediksi]?.slice(0, 3)} {item.tahun_prediksi}
                                   </td>
@@ -442,7 +442,7 @@ export default function PrediksiHasilPage() {
                                     </td>
                                   </tr>
                                 )}
-                              </>
+                              </Fragment>
                             );
                           })}
                         </tbody>

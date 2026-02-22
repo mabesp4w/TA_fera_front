@@ -225,9 +225,9 @@ export const prediksiService = {
   },
 
   /**
-   * Save prediksi ke database
+   * Save prediksi ke database (tanpa generate ulang)
    */
-  async save(data: PredictionGenerateRequest & { keterangan?: string }): Promise<PredictionResult> {
+  async save(data: PredictionGenerateRequest & { keterangan?: string; prediction_data?: PredictionResult }): Promise<PredictionResult> {
     const response = await api.post<APIResponse<PredictionResult>>(
       `/crud/prediksi/generate/`,
       {

@@ -80,6 +80,8 @@ export default function UsersManagementPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [showDetailPassword, setShowDetailPassword] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -214,6 +216,12 @@ export default function UsersManagementPage() {
     resetPassword({ password: "", confirmPassword: "" });
     setShowPassword(false);
     setIsPasswordModalOpen(true);
+  };
+
+  const handleViewDetail = (user: User) => {
+    setSelectedUser(user);
+    setShowDetailPassword(false);
+    setIsDetailModalOpen(true);
   };
 
   const onSubmit = async (data: UserFormData) => {
@@ -426,6 +434,13 @@ export default function UsersManagementPage() {
                             <td className="text-center">
                               <div className="flex items-center justify-center gap-1">
                                 <button
+                                  className="btn btn-xs btn-ghost btn-square text-success"
+                                  onClick={() => handleViewDetail(user)}
+                                  title="Lihat Detail"
+                                >
+                                  <Eye className="w-3.5 h-3.5" />
+                                </button>
+                                <button
                                   className="btn btn-xs btn-ghost btn-square text-info"
                                   onClick={() => handleEdit(user)}
                                   title="Edit"
@@ -513,6 +528,122 @@ export default function UsersManagementPage() {
             </Card>
           </div>
         </div>
+
+        {/* Detail Modal */}
+        {isDetailModalOpen && selectedUser && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-base-100 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+              <div className="p-6 border-b border-base-200">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold flex items-center gap-2">
+                    <Users className="w-5 h-5 text-primary" />
+                    Detail Pengguna
+                  </h3>
+                  <button className="btn btn-sm btn-ghost btn-circle" onClick={() => setIsDetailModalOpen(false)}>
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              <div className="p-6">
+                {/* User Avatar & Name */}
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/60 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg">
+                    {selectedUser.first_name?.[0]?.toUpperCase() || selectedUser.username[0]?.toUpperCase()}
+                    {selectedUser.last_name?.[0]?.toUpperCase() || ''}
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-bold">{selectedUser.first_name} {selectedUser.last_name}</h4>
+                    <p className="text-sm text-base-content/60">@{selectedUser.username}</p>
+                    <div className="mt-1">{getRoleBadge(selectedUser.role)}</div>
+                  </div>
+                </div>
+
+                {/* Detail Info */}
+                <div className="space-y-3">
+                  <div className="bg-base-200/50 rounded-xl p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-base-content/60 font-medium uppercase tracking-wide">Username</span>
+                      <span className="text-sm font-mono font-semibold">{selectedUser.username}</span>
+                    </div>
+                    <div className="divider my-0"></div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-base-content/60 font-medium uppercase tracking-wide">Email</span>
+                      <span className="text-sm">{selectedUser.email}</span>
+                    </div>
+                    <div className="divider my-0"></div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-base-content/60 font-medium uppercase tracking-wide">Nama Depan</span>
+                      <span className="text-sm">{selectedUser.first_name}</span>
+                    </div>
+                    <div className="divider my-0"></div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-base-content/60 font-medium uppercase tracking-wide">Nama Belakang</span>
+                      <span className="text-sm">{selectedUser.last_name}</span>
+                    </div>
+                    <div className="divider my-0"></div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-base-content/60 font-medium uppercase tracking-wide">Role</span>
+                      {getRoleBadge(selectedUser.role)}
+                    </div>
+                    <div className="divider my-0"></div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-base-content/60 font-medium uppercase tracking-wide">Password</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-mono">
+                          {selectedUser.show_password
+                            ? (showDetailPassword ? selectedUser.show_password : '•'.repeat(selectedUser.show_password.length || 8))
+                            : <span className="text-base-content/40 italic text-xs">Tidak tersedia</span>
+                          }
+                        </span>
+                        {selectedUser.show_password && (
+                          <button
+                            type="button"
+                            className="btn btn-xs btn-ghost btn-circle text-base-content/50 hover:text-base-content"
+                            onClick={() => setShowDetailPassword(!showDetailPassword)}
+                            title={showDetailPassword ? 'Sembunyikan Password' : 'Tampilkan Password'}
+                          >
+                            {showDetailPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="flex justify-between items-center mt-6 pt-4 border-t border-base-200">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      leftIcon={<Edit2 className="w-3.5 h-3.5" />}
+                      onClick={() => {
+                        setIsDetailModalOpen(false);
+                        handleEdit(selectedUser);
+                      }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      leftIcon={<Lock className="w-3.5 h-3.5" />}
+                      onClick={() => {
+                        setIsDetailModalOpen(false);
+                        handleChangePassword(selectedUser);
+                      }}
+                    >
+                      Reset Password
+                    </Button>
+                  </div>
+                  <Button variant="ghost" onClick={() => setIsDetailModalOpen(false)}>
+                    Tutup
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Create/Edit Modal */}
         {isModalOpen && (
